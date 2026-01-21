@@ -2,7 +2,7 @@
     <span>New card available (ID: {{ new_id }})</span>
     <button type="button"
             class="btn btn-alert"
-            hx-post="/search"
+            hx-post="search"
             hx-target="#result"
             hx-indicator="#loading"
             hx-vals='{"project": "{{ project }}", "username": ""}'>

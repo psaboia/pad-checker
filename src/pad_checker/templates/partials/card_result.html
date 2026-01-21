@@ -6,7 +6,7 @@
 </div>
 {% elif card %}
 <div id="newer-check"
-     hx-get="/check-newer?project={{ card.project_name }}&current_id={{ card.id }}"
+     hx-get="check-newer?project={{ card.project_name }}&current_id={{ card.id }}"
      hx-trigger="every 15s"
      hx-swap="innerHTML">
 </div>
@@ -17,7 +17,7 @@
     <ul class="recent-cards-list">
         {% for rc in recent_cards %}
         <li class="recent-card-item {% if rc.id == card.id %}current{% endif %}"
-            hx-get="/card/{{ rc.id }}"
+            hx-get="card/{{ rc.id }}"
             hx-target="#result"
             hx-indicator="#loading">
             <span class="recent-card-id">{{ rc.id }}</span>
@@ -42,7 +42,7 @@
                     <span class="refresh-hint">Click to check for new submissions</span>
                     <button type="button"
                             class="btn btn-refresh"
-                            hx-post="/search"
+                            hx-post="search"
                             hx-target="#result"
                             hx-indicator="#loading"
                             hx-vals='{"project": "{{ card.project_name }}", "username": ""}'>
