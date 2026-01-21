@@ -1,0 +1,169 @@
+{% if error %}
+<div class="result-card error">
+    <div class="error-message">
+        {{ error }}
+    </div>
+</div>
+{% elif card %}
+<div id="newer-check"
+     hx-get="/check-newer?project={{ card.project_name }}&current_id={{ card.id }}"
+     hx-trigger="every 15s"
+     hx-swap="innerHTML">
+</div>
+
+{% if recent_cards %}
+<div class="recent-cards-section">
+    <div class="recent-cards-title">Recent Submissions in {{ card.project_name }}</div>
+    <ul class="recent-cards-list">
+        {% for rc in recent_cards %}
+        <li class="recent-card-item {% if rc.id == card.id %}current{% endif %}"
+            hx-get="/card/{{ rc.id }}"
+            hx-target="#result"
+            hx-indicator="#loading">
+            <span class="recent-card-id">{{ rc.id }}</span>
+            <span class="recent-card-sample">{{ rc.sample_id or '-' }}</span>
+            <span class="recent-card-drug">{{ rc.sample_name }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="result-card">
+    <div class="result-card-title">Latest Submission</div>
+    <div class="result-body">
+        <div class="result-main">
+            <div class="result-header">
+                <div>
+                    <div class="result-title">{{ card.sample_name }}</div>
+                    <div class="result-id"><span class="card-id-highlight">Card ID: {{ card.id }}</span></div>
+                </div>
+                <div class="refresh-section">
+                    <span class="refresh-hint">Click to check for new submissions</span>
+                    <button type="button"
+                            class="btn btn-refresh"
+                            hx-post="/search"
+                            hx-target="#result"
+                            hx-indicator="#loading"
+                            hx-vals='{"project": "{{ card.project_name }}", "username": ""}'>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="result-grid">
+                {% if card.sample_id %}
+                <div class="result-item">
+                    <div class="result-item-label">Sample ID</div>
+                    <div class="result-item-value">{{ card.sample_id }}</div>
+                </div>
+                {% endif %}
+
+                <div class="result-item">
+                    <div class="result-item-label">Project</div>
+                    <div class="result-item-value">{{ card.project_name }}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-label">Date & Time</div>
+                    <div class="result-item-value">{{ card.date_of_creation }}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-item-label">Submitted By</div>
+                    <div class="result-item-value">{{ card.user_name }}</div>
+                </div>
+
+                {% if card.camera_type %}
+                <div class="result-item">
+                    <div class="result-item-label">Camera Type</div>
+                    <div class="result-item-value">{{ card.camera_type }}</div>
+                </div>
+                {% endif %}
+
+                {% if card.quantity %}
+                <div class="result-item">
+                    <div class="result-item-label">Quantity</div>
+                    <div class="result-item-value">{{ card.quantity }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if card.notes and not card.notes.raw %}
+            <div class="user-notes-section">
+                <div class="user-notes-title">User Notes</div>
+                <div class="user-notes-content {% if not card.notes.notes_text %}empty{% endif %}">{{ card.notes.notes_text if card.notes.notes_text else "(empty)" }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="result-sidebar">
+            {% if card.image_url %}
+            <div class="pad-image">
+                <img src="{{ card.image_url }}" alt="PAD Card Image" loading="lazy">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if card.notes %}
+    <div class="notes-section">
+        <div class="notes-section-title">Analysis Details</div>
+        {% if card.notes.raw %}
+        <div>{{ card.notes.raw }}</div>
+        {% else %}
+        <div class="notes-grid">
+            {% if card.notes.predicted_drug %}
+            <div class="notes-item">
+                <span class="notes-label">Predicted Drug</span>
+                <span class="notes-value">{{ card.notes.predicted_drug }}</span>
+            </div>
+            {% endif %}
+            {% if card.notes.safe_status %}
+            <div class="notes-item">
+                <span class="notes-label">Status</span>
+                <span class="notes-value status-{{ 'safe' if 'safe' in card.notes.safe_status.lower() and 'unsafe' not in card.notes.safe_status.lower() else 'unsafe' }}">{{ card.notes.safe_status }}</span>
+            </div>
+            {% endif %}
+            {% if card.notes.prediction_score is not none %}
+            <div class="notes-item">
+                <span class="notes-label">Prediction Score</span>
+                <span class="notes-value">{{ "%.2f"|format(card.notes.prediction_score) }}</span>
+            </div>
+            {% endif %}
+            {% if card.notes.quantity_nn is not none %}
+            <div class="notes-item">
+                <span class="notes-label">Quantity (NN)</span>
+                <span class="notes-value">{{ card.notes.quantity_nn }}%</span>
+            </div>
+            {% endif %}
+            {% if card.notes.quantity_pls is not none %}
+            <div class="notes-item">
+                <span class="notes-label">Quantity (PLS)</span>
+                <span class="notes-value">{{ card.notes.quantity_pls }}%</span>
+            </div>
+            {% endif %}
+            {% if card.notes.neural_net %}
+            <div class="notes-item">
+                <span class="notes-label">Model</span>
+                <span class="notes-value">{{ card.notes.neural_net }}</span>
+            </div>
+            {% endif %}
+            {% if card.notes.app_type %}
+            <div class="notes-item">
+                <span class="notes-label">App</span>
+                <span class="notes-value">{{ card.notes.app_type }}{% if card.notes.build %} (v{{ card.notes.build }}){% endif %}</span>
+            </div>
+            {% endif %}
+            {% if card.notes.user %}
+            <div class="notes-item">
+                <span class="notes-label">Operator</span>
+                <span class="notes-value">{{ card.notes.user }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}

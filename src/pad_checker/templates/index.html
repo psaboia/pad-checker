@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}PAD Checker - Verify Submissions{% endblock %}
+
+{% block content %}
+<header>
+    <h1>PAD Checker</h1>
+    <p>Verify if your PAD card was successfully submitted</p>
+</header>
+
+<div class="card search-card">
+    <form hx-post="/search"
+          hx-target="#result"
+          hx-indicator="#loading"
+          class="search-form">
+        <div class="form-group">
+            <label for="project">Project</label>
+            <input type="text"
+                   id="project"
+                   name="project"
+                   list="projects-list"
+                   placeholder="Type to search..."
+                   autocomplete="off"
+                   required>
+            <datalist id="projects-list">
+                {% for project in projects %}
+                <option value="{{ project }}">
+                {% endfor %}
+            </datalist>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Search
+        </button>
+    </form>
+</div>
+
+<div id="loading" class="loading htmx-indicator">
+    <div class="spinner"></div>
+    <span>Searching...</span>
+</div>
+
+<div id="result"></div>
+{% endblock %}
